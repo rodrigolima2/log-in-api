@@ -1,0 +1,12 @@
+CREATE DATABASE log_in;
+
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+  id SERIAL,
+  nome VARCHAR(80) NOT NULL,
+  sobrenome VARCHAR(80) NOT NULL,
+  email VARCHAR(80) NOT NULL UNIQUE,
+  senha TEXT NOT NULL,
+  PRIMARY KEY (id)
+);
