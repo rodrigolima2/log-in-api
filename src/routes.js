@@ -7,11 +7,11 @@ const routes = express();
 
 routes.post('/login', login);
 routes.post('/user', postUser);
-routes.put('/user', putUser);
 
 routes.use(verifyLogin);
 
 routes.get('/login', autoLogin);
 routes.get('/user', getUser);
+routes.put('/user', putUser);
 
 module.exports = routes;
