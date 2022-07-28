@@ -1,7 +1,9 @@
 const knex = require("../database/connection");
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const schemaPostUser = require('../validations/schemaPostUser');
 const schemaPutUser = require('../validations/schemaPutUser');
+const schemaEmail = require('../validations/schemaEmail');
 
 const getUser = async (req, res) => {
     const { user } = req;
@@ -38,6 +40,29 @@ const postUser = async (req, res) => {
         return res.status(400).json({ message: error.message });
     }
 };
+
+const alterarSenha = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        console.log(email)
+        await schemaEmail.validate(req.body);
+
+        const user = await knex("users").where({ email }).first();
+
+        if (!user) {
+            return res.status(400).json({ message: "O E-mail informado não existe." });
+        }
+
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+            expiresIn: "30m",
+        });
+
+        return res.status(200).json({});
+    } catch (error) {
+        return res.status(400).json({ message: error.message });
+    }
+}
 
 const putUser = async (req, res) => {
     const { user } = req;
@@ -86,5 +111,6 @@ const putUser = async (req, res) => {
 module.exports = {
     getUser,
     postUser,
+    alterarSenha,
     putUser
 };

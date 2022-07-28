@@ -1,12 +1,13 @@
 const express = require('express');
 const { verifyLogin } = require('./middlewares/verifyLogin');
 const { login, autoLogin } = require('./controllers/login');
-const { getUser, postUser, putUser } = require('./controllers/user');
+const { getUser, postUser, putUser, alterarSenha } = require('./controllers/user');
 
 const routes = express();
 
 routes.post('/login', login);
 routes.post('/user', postUser);
+routes.post('/alter', alterarSenha);
 
 routes.use(verifyLogin);
 
