@@ -1,6 +1,7 @@
 const knex = require("../database/connection");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const mailer = require('../modules/mailer');
 const schemaPostUser = require('../validations/schemaPostUser');
 const schemaPutUser = require('../validations/schemaPutUser');
 const schemaEmail = require('../validations/schemaEmail');
@@ -45,7 +46,6 @@ const alterarSenha = async (req, res) => {
     const { email } = req.body;
 
     try {
-        console.log(email)
         await schemaEmail.validate(req.body);
 
         const user = await knex("users").where({ email }).first();
@@ -58,7 +58,22 @@ const alterarSenha = async (req, res) => {
             expiresIn: "30m",
         });
 
-        return res.status(200).json({});
+        mailer.sendMail({
+            to: email,
+            from: 'ipirangapfg@gmail.com',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            template: 'auth/forgot_password',
+            context: { token }
+        }, (error) => {
+            if (error) {
+                console.log(error)
+                return res.status(400).json({ message: error.message })
+            }
+        });
+
+        return res.status(200).json({ user });
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }
