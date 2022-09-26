@@ -8,6 +8,7 @@ const routes = express();
 routes.post('/login', login);
 routes.post('/user', postUser);
 routes.post('/alter', alterarSenha);
+routes.put('/alter/:tokenParams', alterarSenha);
 
 routes.use(verifyLogin);
 

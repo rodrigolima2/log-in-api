@@ -44,36 +44,42 @@ const postUser = async (req, res) => {
 
 const alterarSenha = async (req, res) => {
     const { email } = req.body;
+    const { tokenParams } = req.params;
 
     try {
-        await schemaEmail.validate(req.body);
+        if (!tokenParams) {
+            await schemaEmail.validate(req.body);
 
-        const user = await knex("users").where({ email }).first();
+            const user = await knex("users").where({ email }).first();
 
-        if (!user) {
-            return res.status(400).json({ message: "O E-mail informado não existe." });
+            if (!user) {
+                return res.status(400).json({ message: "O E-mail informado não existe." });
+            }
+
+            const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+                expiresIn: "30m",
+            });
+
+            mailer.sendMail({
+                to: email,
+                from: 'ipirangapfg@gmail.com',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                template: 'auth/forgot_password',
+                context: { token }
+            }, (error) => {
+                if (error) {
+                    return res.status(400).json({ message: error.message })
+                }
+            });
+
+            return res.status(200).json({});
         }
 
-        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-            expiresIn: "30m",
-        });
-
-        mailer.sendMail({
-            to: email,
-            from: 'ipirangapfg@gmail.com',
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-            template: 'auth/forgot_password',
-            context: { token }
-        }, (error) => {
-            if (error) {
-                console.log(error)
-                return res.status(400).json({ message: error.message })
-            }
-        });
-
-        return res.status(200).json({ user });
+        if (tokenParams) {
+            return res.status(200).json({ token: tokenParams })
+        }
     } catch (error) {
         return res.status(400).json({ message: error.message });
     }
