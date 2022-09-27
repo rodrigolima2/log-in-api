@@ -60,17 +60,17 @@ const alterarSenha = async (req, res) => {
                 expiresIn: "30m",
             });
 
-            mailer.sendMail({
+            const emailBody = {
                 to: email,
-                from: 'ipirangapfg@gmail.com',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                from: process.env.GM_USER,
+                subject: 'Alterar Senha - Log-In',
                 template: 'auth/forgot_password',
                 context: { token }
-            }, (error) => {
+            }
+
+            mailer.sendMail(emailBody, (error) => {
                 if (error) {
-                    return res.status(400).json({ message: error.message })
+                    return res.status(400).json({ message: error.message });
                 }
             });
 
