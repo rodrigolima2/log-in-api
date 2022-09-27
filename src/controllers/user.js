@@ -78,7 +78,32 @@ const alterarSenha = async (req, res) => {
         }
 
         if (tokenParams) {
-            return res.status(200).json({ token: tokenParams })
+            jwt.verify(tokenParams, process.env.JWT_SECRET);
+
+            const { id } = jwt.decode(tokenParams, process.env.JWT_SECRET);
+            const existingUser = await knex("users").where({ id }).first();
+
+            if (!existingUser) {
+                return res.status(404).json({ message: "Usuario não encontrado!" });
+            }
+
+            const { senha } = req.body;
+
+            await schemaPutUser.validate(req.body);
+
+            const pwdCrypt = await bcrypt.hash(senha, Number(process.env.SALT_ROUNDS));
+            const body = { senha: pwdCrypt };
+            const updateUser = await knex("users")
+                .update(body)
+                .where({ id: id });
+
+            if (updateUser === 0) {
+                return res
+                    .status(500)
+                    .json({ message: "Não foi possível atualizar o usuário!" });
+            }
+
+            return res.status(200).json({});
         }
     } catch (error) {
         return res.status(400).json({ message: error.message });
