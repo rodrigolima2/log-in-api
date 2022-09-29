@@ -13,7 +13,10 @@ const verifyLogin = async (req, res, next) => {
 
         jwt.verify(token, process.env.JWT_SECRET);
 
-        const { id } = jwt.decode(token, process.env.JWT_SECRET);
+        const { id, auth } = jwt.decode(token, process.env.JWT_SECRET);
+
+        if (!auth) return res.status(401).json({ message: "Não autorizado." });
+
         const existingUser = await knex("users").where({ id }).first();
 
         if (!existingUser) {
